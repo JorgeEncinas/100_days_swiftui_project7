@@ -78,6 +78,50 @@ class Expenses2 {
     }
 }
 
+struct ExpenseItemModifier : ViewModifier {
+    var item : ExpenseItem2
+    
+    func body(content: Content) -> some View {
+        content
+        .foregroundStyle(
+            item.amount < 10.0 ? .red :
+                item.amount < 100.0 ?
+                    .yellow : .green
+        )
+    }
+}
+
+extension View {
+    func expenseItemCustomModifier(item: ExpenseItem2) -> some View {
+        modifier(ExpenseItemModifier(item: item))
+    }
+}
+
+struct ExpensesListItemView : View {
+    var item : ExpenseItem2
+    
+    var body : some View {
+        HStack
+        {
+            VStack(alignment: .leading) {
+                Text(item.name)
+                    .font(.headline)
+                Text(item.type)
+            }
+
+            Spacer()
+        Text(
+            item.amount,
+            format: .currency(
+                code: Locale.current.currency?.identifier ?? "USD"
+                )
+        )
+        .expenseItemCustomModifier(item: item)
+        
+        }
+    }
+}
+
 struct ExpensesListView2 : View {
     @Binding var expenses: Expenses2
     @Binding var showingAddExpense : Bool
@@ -86,16 +130,64 @@ struct ExpensesListView2 : View {
         expenses.items.remove(atOffsets: offsets)
     }
     
+    func removeItems(idArray : [UUID]) {
+        for id in idArray {
+            let actualIndexSet = expenses.items.firstIndex(where: { (item : ExpenseItem2) in
+                return item.id == id
+            })
+            
+            if let unwrappedIndexSet = actualIndexSet { //Checking it's not `nil`
+                expenses.items.remove(at: unwrappedIndexSet)
+            }
+        }
+    }
+    
+    func filterItems(target: String) -> [ExpenseItem2] {
+        return expenses.items.filter { $0.type == target }
+    }
+    
+    var personalItems : [ExpenseItem2] {
+        filterItems(target: "Personal")
+    }
+    
+    var businessItems : [ExpenseItem2] {
+        filterItems(target: "Business")
+    }
+    
     var body : some View {
         NavigationStack {
             List {
-                ForEach(expenses.items, id:\.id) { item in
-                    // the `name` property might not necessarily be
-                    // an appropriate unique identifier
-                    // perhaps an `id` property of sorts is warranted, right?
-                    Text(item.name)
+                Section("Personal") {
+                    ForEach(personalItems) { item in
+                        ExpensesListItemView(item: item)
+                    }.onDelete { (indexOffsets : IndexSet) in
+                        let itemsPersonal : [UUID] = indexOffsets.compactMap { (index : Int) in
+                            if (personalItems.indices.contains(index)) {
+                                return personalItems[index].id
+                            }
+                            return nil
+                        }
+                        //Now itemsPersonal is a list of UUIDs, and we can use that to delete them!
+                        removeItems(idArray: itemsPersonal)
+                    }
                 }
-                .onDelete(perform: removeItems)
+                Section("Business") {
+                    ForEach(businessItems) { item in
+                        ExpensesListItemView(item: item)
+                    }.onDelete { (indexOffsets : IndexSet) in
+                        let itemsBusiness : [UUID] = indexOffsets.reduce(into: [UUID]()) { (result : inout [UUID], index : Int) in
+                            if (businessItems.indices.contains(index)) {
+                                result.append(businessItems[index].id)
+                            }
+                        }
+                        //Now itemsPersonal is a list of UUIDs, and we can use that to delete them!
+                        removeItems(idArray: itemsBusiness)
+                    }
+                }
+                //ForEach(expenses.items) { item in //id:\.id
+                //    ExpensesListItemView(item: item)
+                //}
+                //.onDelete(perform: removeItems)
             }
             .navigationTitle("iExpense")
             .toolbar {
