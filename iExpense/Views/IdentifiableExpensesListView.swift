@@ -55,7 +55,8 @@ class Expenses2 {
 }
 
 struct ExpensesListView2 : View {
-    @State private var expenses = Expenses2()
+    @Binding var expenses: Expenses2
+    @Binding var showingAddExpense : Bool
     
     func removeItems(at offsets: IndexSet) {
         expenses.items.remove(atOffsets: offsets)
@@ -75,12 +76,13 @@ struct ExpensesListView2 : View {
             .navigationTitle("iExpense")
             .toolbar {
                 Button("Add Expense", systemImage: "plus") {
-                    let expense = ExpenseItem2(
-                        name: "Test",
-                        type: "Personal",
-                        amount: 5
-                    )
-                    expenses.items.append(expense)
+                    //let expense = ExpenseItem2(
+                    //    name: "Test",
+                    //    type: "Personal",
+                    //    amount: 5
+                    //)
+                    //expenses.items.append(expense)
+                    showingAddExpense = true
                 }
                 EditButton()
             }

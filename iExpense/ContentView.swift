@@ -9,9 +9,19 @@ import SwiftUI
 
 
 struct ContentView: View {
+    @State private var showingAddExpense = false
+    @State private var expenses = Expenses2()
+    
 
     var body : some View {
-        ExpensesListView2()
+        ZStack {
+            ExpensesListView2(
+                expenses: $expenses,
+                showingAddExpense: $showingAddExpense
+            )
+        }.sheet(isPresented: $showingAddExpense) {
+            AddView(expenses: expenses)
+        }
         //CodablesView()
     }
 }
