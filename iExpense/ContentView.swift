@@ -6,12 +6,11 @@
 //
 import SwiftUI
 
-
-
 struct ContentView: View {
 
     var body : some View {
-        CodablesView()
+        ExpensesListView()
+        //CodablesView()
     }
 }
 
@@ -27,9 +26,6 @@ struct ContentView: View {
 // We need to ask the environment to dismiss our view,
 //      because it might have been presented in ANY number of DIFFERENT WAYS.
 //      "Figure out how this view was presented, then dismiss it appropriately".
-
-
-
 
 #Preview {
     ContentView()
