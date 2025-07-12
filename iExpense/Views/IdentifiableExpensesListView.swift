@@ -23,8 +23,8 @@ import SwiftUI
 // the identifier we're using, is not unique, and we need it to be.
 // Thus, we should add an ID property
 
-struct ExpenseItem2 : Identifiable {
-    let id : UUID = UUID()
+struct ExpenseItem2 : Identifiable, Codable {
+    var id : UUID = UUID() //Since all instances begin with a UUID, even an empty one, you can't use `let` now that it's serializable.
     let name : String
     let type : String
     let amount : Double
@@ -51,7 +51,31 @@ struct ExpenseItem2 : Identifiable {
 
 @Observable
 class Expenses2 {
-    var items = [ExpenseItem2]()
+    var items = [ExpenseItem2]() {
+        didSet {
+            if let encoded = try? JSONEncoder().encode(items) {
+                UserDefaults.standard.set(
+                    encoded,
+                    forKey: "Items"
+                )
+            }
+        }
+    }
+    
+    init() {
+        if let savedItems = UserDefaults.standard.data(
+            forKey: "Items"
+        ) {
+            if let decodedItems = try? JSONDecoder().decode(
+                [ExpenseItem2].self, //Here, `.self` is about specifying that we're referring to the type!
+                from: savedItems
+            ) {
+                self.items = decodedItems
+                return
+            }
+        }
+        self.items = []
+    }
 }
 
 struct ExpensesListView2 : View {

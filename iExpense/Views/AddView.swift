@@ -32,7 +32,18 @@ struct AddView: View {
                     format: .currency(code: "USD")
                 )
                 .keyboardType(.decimalPad)
-            }.navigationTitle("Add new Expense")
+            }
+            .navigationTitle("Add new Expense")
+            .toolbar {
+                Button("Save") {
+                    let item = ExpenseItem2(
+                        name: name,
+                        type: type,
+                        amount: amount
+                    )
+                    expenses.items.append(item)
+                }
+            }
         }
     }
 }
