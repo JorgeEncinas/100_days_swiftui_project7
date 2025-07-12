@@ -6,10 +6,12 @@
 //
 import SwiftUI
 
+
+
 struct ContentView: View {
 
     var body : some View {
-        ExpensesListView()
+        ExpensesListView2()
         //CodablesView()
     }
 }
